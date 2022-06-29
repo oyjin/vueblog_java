@@ -1,9 +1,9 @@
 package com.oyj.vueblog.controller;
 
 
-import org.springframework.web.bind.annotation.RequestMapping;
-
-import org.springframework.web.bind.annotation.RestController;
+import com.oyj.vueblog.service.UserService;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.web.bind.annotation.*;
 
 /**
  * <p>
@@ -16,5 +16,11 @@ import org.springframework.web.bind.annotation.RestController;
 @RestController
 @RequestMapping("/user")
 public class UserController {
+    @Autowired
+    private UserService userService;
 
+    @GetMapping("/{id}")
+    public Object test(@PathVariable("id") Long id) {
+        return userService.getById(id);
+    }
 }
