@@ -46,7 +46,8 @@ public class AccountRealm extends AuthorizingRealm {
     }
 
     /**
-     * 登录认证校验
+     * 登录认证校验，通过jwt获取到用户信息，判断用户的状态，最后异常就抛出对应的异常信息，
+     * 否者封装成SimpleAuthenticationInfo返回给shiro
      * @param token
      * @return 返回一个SimpleAuthenticationInfo对象，三个参数分别是用户对象，密码，当前realm的名称
      * @throws AuthenticationException
