@@ -25,7 +25,6 @@ import java.time.LocalDateTime;
  * @since 2022-06-26
  */
 @RestController
-@RequestMapping("/blog")
 public class BlogController {
 
     @Autowired
