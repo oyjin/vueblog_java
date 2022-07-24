@@ -7,11 +7,13 @@ import org.apache.shiro.session.mgt.SessionManager;
 import org.apache.shiro.spring.web.ShiroFilterFactoryBean;
 import org.apache.shiro.spring.web.config.DefaultShiroFilterChainDefinition;
 import org.apache.shiro.spring.web.config.ShiroFilterChainDefinition;
+import org.apache.shiro.util.ThreadContext;
 import org.apache.shiro.web.mgt.DefaultWebSecurityManager;
 import org.apache.shiro.web.session.mgt.DefaultWebSessionManager;
 import org.crazycake.shiro.RedisCacheManager;
 import org.crazycake.shiro.RedisSessionDAO;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.web.servlet.FilterRegistrationBean;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
@@ -59,15 +61,41 @@ public class ShiroConfig {
 
         // inject redisCacheManager
         securityManager.setCacheManager(redisCacheManager);
+
+        // 不加这一行配置,引入Druid会报错:No SecurityManager accessible to the calling code
+//        ThreadContext.bind(securityManager);
         return securityManager;
     }
 
+
+    /**
+     * 自定义项目过滤器链，定制不需要经过filter过滤的请求
+     *
+     * @return
+     */
     @Bean
     public ShiroFilterChainDefinition shiroFilterChainDefinition() {
         DefaultShiroFilterChainDefinition chainDefinition = new DefaultShiroFilterChainDefinition();
 
         Map<String, String> filterMap = new LinkedHashMap<>();
+        // 访问/login和/unauthorized 不需要经过filter过滤器
+        filterMap.put("/login", "anon");
+        filterMap.put("/entry", "anon");
+        filterMap.put("/unauthorized/**", "anon");
+        //swagger配置放行
+        filterMap.put("/swagger-ui.html", "anon");
+        filterMap.put("/swagger/**", "anon");
+        filterMap.put("/webjars/**", "anon");
+        filterMap.put("/swagger-resources/**", "anon");
+        filterMap.put("/v2/**", "anon");
+        // druid放行
+        filterMap.put("/druid/**", "anon");
+        // 静态资源放行
+        filterMap.put("/**/*.html", "anon");
+        filterMap.put("/**/*.jpg", "anon");
+        filterMap.put("/**/*.png", "anon");
 
+        // 所有请求通过我们自己的JWT Filter
         filterMap.put("/**", "jwt");
         chainDefinition.addPathDefinitions(filterMap);
         return chainDefinition;
@@ -75,18 +103,30 @@ public class ShiroConfig {
 
     @Bean("shiroFilterFactoryBean")
     public ShiroFilterFactoryBean shiroFilterFactoryBean(SecurityManager securityManager,
-                                                         ShiroFilterChainDefinition shiroFilterChainDefinition) {
+                                                         ShiroFilterChainDefinition shiroFilterChainDefinition, FilterRegistrationBean jwtFilterRegBean) {
         ShiroFilterFactoryBean shiroFilter = new ShiroFilterFactoryBean();
         shiroFilter.setSecurityManager(securityManager);
 
         Map<String, Filter> filters = new HashMap<>();
-        filters.put("jwt", jwtFilter);
+        filters.put("jwt", jwtFilterRegBean.getFilter());
         shiroFilter.setFilters(filters);
 
         Map<String, String> filterMap = shiroFilterChainDefinition.getFilterChainMap();
 
         shiroFilter.setFilterChainDefinitionMap(filterMap);
         return shiroFilter;
+    }
+
+    /**
+     * 配置JwtFilter过滤器,并设置为未注册状态
+     */
+    @Bean
+    public FilterRegistrationBean jwtFilterRegBean() {
+        FilterRegistrationBean filterRegistrationBean = new FilterRegistrationBean();
+        //添加JwtFilter  并设置为未注册状态
+        filterRegistrationBean.setFilter(jwtFilter);
+        filterRegistrationBean.setEnabled(false);
+        return filterRegistrationBean;
     }
 
 }
