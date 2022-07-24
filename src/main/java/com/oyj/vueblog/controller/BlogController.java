@@ -8,6 +8,7 @@ import com.oyj.vueblog.Result;
 import com.oyj.vueblog.entity.Blog;
 import com.oyj.vueblog.service.BlogService;
 import com.oyj.vueblog.util.ShiroUtil;
+import io.swagger.annotations.Api;
 import org.apache.shiro.authz.annotation.RequiresAuthentication;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.util.Assert;
@@ -25,6 +26,7 @@ import java.time.LocalDateTime;
  * @since 2022-06-26
  */
 @RestController
+@Api(value="博客controller",tags={"博客操作接口"})
 public class BlogController {
 
     @Autowired

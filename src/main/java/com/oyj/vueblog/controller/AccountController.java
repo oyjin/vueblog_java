@@ -7,6 +7,7 @@ import com.oyj.vueblog.entity.LoginDto;
 import com.oyj.vueblog.entity.User;
 import com.oyj.vueblog.service.UserService;
 import com.oyj.vueblog.util.JwtUtils;
+import io.swagger.annotations.Api;
 import org.apache.shiro.SecurityUtils;
 import org.apache.shiro.authz.annotation.RequiresAuthentication;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -25,6 +26,7 @@ import java.util.HashMap;
  * @since 2022-07-01
  */
 @RestController
+@Api(value="用户controller",tags={"用户操作接口"})
 public class AccountController {
     @Autowired
     UserService userService;
